@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+// Lexer. Given a source, transforms it into a list of tokens (lexemes).
 class Scanner {
     // Reserved keywords for the language
     private static final Map<String, TokenType> keywords;
@@ -78,9 +79,12 @@ class Scanner {
            case '>': addToken(isNext('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
            case '<': addToken(isNext('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
            case '/':
+                // Consume comment
                 if (isNext('/')) {
-                    // Consume comment
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    // Division
+                    addToken(TokenType.SLASH);
                 }
                 break;
 
