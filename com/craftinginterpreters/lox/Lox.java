@@ -55,6 +55,14 @@ public class Lox {
         report(lineNumber, "", message);
     }
 
+    static void reportError(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.lineNumber, " at end", message);
+        } else {
+            report(token.lineNumber, " at '" + token.lexeme + "'", message);
+        }
+    }
+
     private static void report(int lineNumber, String where, String message) {
         System.err.println("[line " + lineNumber + "] Error" + where + ": " + message);
         hasError = true;
