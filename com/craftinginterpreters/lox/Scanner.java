@@ -59,7 +59,7 @@ class Scanner {
 
     /** Consumes the token between the start index and the end of the token. */
     private void scanToken() {
-       char character = advance();
+       char character = consumeCharacter();
        switch (character) {
            // Single-character tokens
            case '(': addToken(TokenType.LEFT_PAREN); break;
@@ -81,7 +81,7 @@ class Scanner {
            case '/':
                 // Consume comment
                 if (isNext('/')) {
-                    while (peek() != '\n' && !isAtEnd()) advance();
+                    while (peek() != '\n' && !isAtEnd()) consumeCharacter();
                 } else {
                     // Division
                     addToken(TokenType.SLASH);
@@ -133,12 +133,12 @@ class Scanner {
         char nextCharacter = source.charAt(currentIndex + 1);
         if (nextCharacter != expectedCharacter) return false;
         // If it did match, we need to consume that character
-        advance();
+        consumeCharacter();
         return true;
     }
 
     /** Consumes the next character in the source and returns it. */
-    private char advance() {
+    private char consumeCharacter() {
         return source.charAt(currentIndex++);
     }
 
@@ -175,7 +175,7 @@ class Scanner {
         while (peek() != '"' && !isAtEnd()) {
             // Lox supports multi-line strings
             if (peek() == '\n') lineNumber++;
-            advance();
+            consumeCharacter();
         }
 
         if (isAtEnd()) {
@@ -183,7 +183,7 @@ class Scanner {
         }
 
         // Closing "
-        advance();
+        consumeCharacter();
 
         // Get string literal value, excluding the quotes themselves. NOTE: If Lox supported escape sequences, we would need to unescape them here.
         String value = source.substring(tokenStartIndex + 1, currentIndex - 1);
@@ -193,15 +193,15 @@ class Scanner {
     /** Processes a number token. */
     private void number() {
         // Consume digits
-        while (isDigit(peek())) advance();
+        while (isDigit(peek())) consumeCharacter();
 
         if (peek() == '.' && isDigit(peekNext())) {
             // Consume the . in a double/float type
-            advance();
+            consumeCharacter();
         }
 
         // Consume digits
-        while (isDigit(peek())) advance();
+        while (isDigit(peek())) consumeCharacter();
 
         Double value = Double.parseDouble(source.substring(tokenStartIndex, currentIndex));
         addToken(TokenType.NUMBER, value);
@@ -209,7 +209,7 @@ class Scanner {
 
     /** Processes an identifier in maximal munch fashion, then treats it as either an identifier or a reserved keyword. */
     private void identifier() {
-        while (isAlphaNumeric(peek())) advance();
+        while (isAlphaNumeric(peek())) consumeCharacter();
         String text = source.substring(tokenStartIndex, currentIndex);
         TokenType type = keywords.get(text);
         if (type == null) type = TokenType.IDENTIFIER;
