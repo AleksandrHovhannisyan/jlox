@@ -12,6 +12,14 @@ class Parser {
         this.tokens = tokens;
         this.current = 0;
     }
+ 
+    Expr parse() {
+        try {
+            return expression();
+        } catch (ParseError error) {
+            return null;
+        }
+    }
 
     /**
      * ========================================================================================
@@ -19,8 +27,8 @@ class Parser {
      * ========================================================================================
      */ 
 
-    /** <expr> ::= <equality> */
-    private Expr expr() {
+    /** <expression> ::= <equality> */
+    private Expr expression() {
         return equality();
     }
 
@@ -101,6 +109,8 @@ class Parser {
             consumeToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+
+        throw error(peek(), "Expect expression.");
     }
 
     private boolean matches(TokenType... types) {
@@ -145,5 +155,28 @@ class Parser {
     private ParseError error(Token token, String message) {
         Lox.reportError(token, message);
         return new ParseError();
+    }
+
+    /** Synchronizes the parser to a valid state after it has encountered an error. Discards tokens until it thinks it has found a statement boundary. */
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (getMatchedToken().type == TokenType.SEMICOLON) return;
+
+            switch (peek().type) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
     }
 }
