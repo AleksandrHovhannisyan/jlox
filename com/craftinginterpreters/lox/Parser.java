@@ -32,7 +32,7 @@ class Parser {
         return equality();
     }
 
-    /** Chapter 6 challenge 1: C-style comma operator. TODO: re-enable after we add parsing for function args
+    /** Chapter 6 challenge 1: C-style comma operator, lowest precedence. TODO: re-enable after we add parsing for function args
      * <comma> ::= <equality> ("," <equality>)*
      */
     private Expr comma() {
@@ -45,7 +45,7 @@ class Parser {
         return expr;
     }
 
-    /** <equality> ::= <comparison> ("!="|"==") <comparison>)* */
+    /** <equality> ::= <comparison> ( ("!="|"==") <comparison> )* */
     private Expr equality() {
         Expr expr = comparison();
         while (matches(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
@@ -53,11 +53,10 @@ class Parser {
             Expr right = comparison();
             expr = new Expr.Binary(expr, operator, right);
         }
-
         return expr;
     }
 
-    /** <comparison> ::= <term> (">"|">="|"<"|"<=" <term>)* */
+    /** <comparison> ::= <term> ( (">"|">="|"<"|"<=") <term> )* */
     private Expr comparison() {
         Expr expr = term();
         while (matches(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
@@ -65,11 +64,10 @@ class Parser {
             Expr right = term();
             expr = new Expr.Binary(expr, operator, right);
         }
-
         return expr;
     }
 
-    /** <term> ::= <factor> ("-"|"+" <factor>)* */
+    /** <term> ::= <factor> ( ("-"|"+") <factor> )* */
     private Expr term() {
         Expr expr = factor();
         while (matches(TokenType.MINUS, TokenType.PLUS)) {
@@ -80,7 +78,7 @@ class Parser {
         return expr;
     }
    
-    /** <factor> ::= <unary> ("/"|"*" <unary>)* */
+    /** <factor> ::= <unary> ( ("/"|"*") <unary> )* */
     private Expr factor() {
         Expr expr = unary();
         while (matches(TokenType.SLASH, TokenType.STAR)) {
@@ -91,7 +89,9 @@ class Parser {
         return expr;
     }
 
-    /** <unary> ::= ("!"|"-" <unary>) | <primary> */
+    /** <unary> ::= ("!"|"-") <unary> 
+     *            | <primary>
+     */
     private Expr unary() {
         if (matches(TokenType.BANG, TokenType.MINUS)) {
             Token operator = getMatchedToken();
@@ -101,22 +101,22 @@ class Parser {
         return primary();
     }
    
-    /** <primary> ::= "false"|"true"|"nil"| "(" <expr> ")" */
+    /** <primary> ::= "false" | "true" | "nil" | "(" <expression> ")" */
     private Expr primary() {
         if (matches(TokenType.FALSE)) return new Expr.Literal(false);
         if (matches(TokenType.TRUE)) return new Expr.Literal(true);
         if (matches(TokenType.NIL)) return new Expr.Literal(null);
-        if (matches(TokenType.NUMBER, TokenType.STRING)) {
-            return new Expr.Literal(getMatchedToken().literal);
-        }
+        if (matches(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(getMatchedToken().literal);
         if (matches(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
-            consumeToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
+            expectToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
         throw error(peek(), "Expect expression.");
     }
 
+    /** Returns `true` if the current token we are looking at matches one of the given types and `false` otherwise. 
+     *  NOTE: If it matches, the parser will advance one position. */
     private boolean matches(TokenType... types) {
         for (TokenType type : types) {
             if (isTokenOfType(type)) {
@@ -127,47 +127,57 @@ class Parser {
         return false;
     }
 
+    /** Returns `true` if the current token we are looking at matches one of the given types and `false` otherwise. */
     private boolean isTokenOfType(TokenType type) {
         if (isAtEnd()) return false;
         return peek().type == type;
     }
 
+    /** If possible, advances the parser one position and returns the token at that new position. */
     private Token advance() {
         if (!isAtEnd()) current++;
         return getMatchedToken();
     }
 
+    /** Returns `true` if the parser has reached the final token in the source. */
     private boolean isAtEnd() {
         return peek().type == TokenType.EOF;
     }
     
+    /** Returns the token at the current position. */
     private Token peek() {
         return tokens.get(current);
     }
 
+    /** Returns the token at the previous position. */
     private Token getMatchedToken() {
         return tokens.get(current - 1);
     }
 
-    private Token consumeToken(TokenType type, String message) {
+    /** "Swallows" (consumes) the token of the specified type. If the token types do not match, throws an error. */
+    private Token expectToken(TokenType type, String message) {
         if (isTokenOfType(type)) {
             return advance();
         }
         throw error(peek(), message);
     }
 
+    /** Reports an error to the user and returns that error so it can be thrown. */
     private ParseError error(Token token, String message) {
         Lox.reportError(token, message);
         return new ParseError();
     }
 
-    /** Synchronizes the parser to a valid state after it has encountered an error. Discards tokens until it thinks it has found a statement boundary. */
+    /** Synchronizes the parser to a valid state after it has encountered an error. 
+     * This is done by discarding tokens until we think we have found a statement boundary (usually semicolon).
+     */
     private void synchronize() {
+        // Move past the token that triggered the error
         advance();
 
+        // Move past all tokens until we reach a semicolon
         while (!isAtEnd()) {
             if (getMatchedToken().type == TokenType.SEMICOLON) return;
-
             switch (peek().type) {
                 case CLASS:
                 case FUN:
@@ -179,7 +189,7 @@ class Parser {
                 case RETURN:
                     return;
             }
-
+            // Advance past the semicolon to synchronize to the start of the next statement
             advance();
         }
     }
