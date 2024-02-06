@@ -32,10 +32,22 @@ class Parser {
         return equality();
     }
 
+    /** Chapter 6 challenge 1: C-style comma operator. TODO: re-enable after we add parsing for function args
+     * <comma> ::= <equality> ("," <equality>)*
+     */
+    private Expr comma() {
+        Expr expr = equality();
+        while (matches(TokenType.COMMA)) {
+            Token operator = getMatchedToken();
+            Expr right = equality();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+        return expr;
+    }
+
     /** <equality> ::= <comparison> ("!="|"==") <comparison>)* */
     private Expr equality() {
         Expr expr = comparison();
-
         while (matches(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
             Token operator = getMatchedToken();
             Expr right = comparison();
@@ -48,7 +60,6 @@ class Parser {
     /** <comparison> ::= <term> (">"|">="|"<"|"<=" <term>)* */
     private Expr comparison() {
         Expr expr = term();
-
         while (matches(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
             Token operator = getMatchedToken();
             Expr right = term();
@@ -61,26 +72,22 @@ class Parser {
     /** <term> ::= <factor> ("-"|"+" <factor>)* */
     private Expr term() {
         Expr expr = factor();
-
         while (matches(TokenType.MINUS, TokenType.PLUS)) {
             Token operator = getMatchedToken();
             Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
         }
-
         return expr;
     }
    
     /** <factor> ::= <unary> ("/"|"*" <unary>)* */
     private Expr factor() {
         Expr expr = unary();
-
         while (matches(TokenType.SLASH, TokenType.STAR)) {
             Token operator = getMatchedToken();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
         }
-
         return expr;
     }
 
@@ -99,17 +106,14 @@ class Parser {
         if (matches(TokenType.FALSE)) return new Expr.Literal(false);
         if (matches(TokenType.TRUE)) return new Expr.Literal(true);
         if (matches(TokenType.NIL)) return new Expr.Literal(null);
-        
         if (matches(TokenType.NUMBER, TokenType.STRING)) {
             return new Expr.Literal(getMatchedToken().literal);
         }
-
         if (matches(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
             consumeToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
-
         throw error(peek(), "Expect expression.");
     }
 

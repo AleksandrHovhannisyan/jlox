@@ -100,9 +100,7 @@ class Scanner {
             // Strings
             case '"': string(); break;
 
-            // Identifiers
-
-            // Unrecognized character
+            // Other
             default:
                 if (isDigit(character)) {
                     number();
@@ -115,16 +113,18 @@ class Scanner {
        }
     }
 
-    /** Returns the current character in the source without advancing (lookahead), or the null terminator character if we are at the end of the source. */
-    private char peek() {
-        if (isAtEnd()) return '\0'; // null terminator
-        return source.charAt(currentIndex);
+    /** Returns the character at the specified index in the source without advancing (lookahead), or the null terminator character if index is at or past the end of the source. */
+    private char getCharAt(int index) {
+        if (index >= source.length()) return '\0';
+        return source.charAt(index);
     }
 
-    /** Returns the character at the next position in the source without advancing (lookahead), or the null terminator character if there are no more characters. */
+    private char peek() {
+        return getCharAt(currentIndex);
+    }
+
     private char peekNext() {
-        if (currentIndex + 1 >= source.length()) return '\0';
-        return source.charAt(currentIndex + 1);
+        return getCharAt(currentIndex + 1);
     }
 
     /** Peeks at the next character in the source and returns `true` if it matches the specified character. */
