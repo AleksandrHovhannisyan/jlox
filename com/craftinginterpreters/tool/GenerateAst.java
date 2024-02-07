@@ -29,23 +29,27 @@ public class GenerateAst {
         writer.println();
         writer.println("import java.util.List;");
         writer.println();
+        writer.println("/** Namespace/abstract class that defines all possible types of expressions as a hierarchy of specialized classes. This allows us to construct an abstract syntax tree (AST) by linking instances of concrete expression types to each other in an object-oriented manner. For example, `Expr.Binary` contains private fields for its left and right expressions (as well as an operator); in turn, these fields can reference instances of other expression types, and so on until we reach leaf (terminal) tokens in the tree. */");
         writer.println("abstract class " + baseName + " {");
 
-        defineVisitor(writer, baseName, types);
+        defineVisitorInterface(writer, baseName, types);
+
+        writer.println();
+        writer.println("\t/** Accept a visitor to us, and instruct it on HOW to visit us so it can return a value.*/");
+        writer.println("\tabstract <R> R accept(Visitor<R> visitor);");
 
         for (String type : types) {
             String className = type.split(":")[0].trim();
             String fields = type.split(":")[1].trim();
-            defineType(writer, baseName, className, fields);
+            defineConcreteClass(writer, baseName, className, fields);
         }
 
-        writer.println();
-        writer.println("\tabstract <R> R accept(Visitor<R> visitor);");
         writer.println("}");
         writer.close();
     }
 
-    private static void defineVisitor(PrintWriter writer, String baseName, List<String> types) {
+    private static void defineVisitorInterface(PrintWriter writer, String baseName, List<String> types) {
+        writer.println("\t/** An expression visitor must define all of the methods in this interface. */");
         writer.println("\tinterface Visitor<R> {");
         for (String type : types) {
             String typeName = type.split(":")[0].trim();
@@ -54,7 +58,7 @@ public class GenerateAst {
         writer.println("\t}");
     }
 
-    private static void defineType(PrintWriter writer, String baseName, String className, String fieldList) {
+    private static void defineConcreteClass(PrintWriter writer, String baseName, String className, String fieldList) {
         writer.println();
         writer.println("\tstatic class " + className + " extends " + baseName + " {");
         String[] fields = fieldList.split(", ");
