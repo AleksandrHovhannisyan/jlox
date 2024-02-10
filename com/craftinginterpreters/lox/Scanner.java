@@ -130,8 +130,8 @@ class Scanner {
     /** Peeks at the next character in the source and returns `true` if it matches the specified character. */
     private boolean isNext(char expectedCharacter) {
         if (isAtEnd()) return false;
-        char nextCharacter = source.charAt(currentIndex + 1);
-        if (nextCharacter != expectedCharacter) return false;
+        char actualCharacter = source.charAt(currentIndex);
+        if (actualCharacter != expectedCharacter) return false;
         // If it did match, we need to consume that character
         consumeCharacterAndAdvance();
         return true;
