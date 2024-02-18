@@ -3,9 +3,9 @@ package com.craftinginterpreters.lox;
 
 import java.util.List;
 
-/** Namespace/abstract class that defines all possible types of expressions as a hierarchy of specialized classes. This is known as the interpreter design pattern; it allows us to construct an abstract syntax tree (AST) by linking instances of concrete expression types to each other in an object-oriented manner. For example, `Expr.Binary` contains private fields for its left and right expressions (as well as an operator); in turn, these fields can reference instances of other expression types, and so on until we reach leaf (terminal) tokens in the tree. */
+/** Namespace/abstract class that defines all possible types of Exprs as a hierarchy of specialized classes. This allows us to construct an abstract syntax tree (AST) by linking instances of concrete Expr types to each other in an object-oriented manner, until we reach leaf (terminal) tokens in the tree. */
 abstract class Expr {
-	/** An expression visitor must define all of the methods in this interface. */
+	/** A Expr visitor must define all of the methods in this interface. */
 	interface Visitor<R> {
 		R visitLiteralExpr(Literal expr);
 		R visitGroupingExpr(Grouping expr);

@@ -119,6 +119,7 @@ class Interpreter implements Expr.Visitor<Object> {
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
+    /** Checks for division by zero. See Chapter 7 challenge 3. */
     private void checkDivisionByZero(Token operator, Object right) {
         if (right instanceof Double && (double)right == 0.0) {
             throw new RuntimeError(operator, "Cannot divide by zero.");

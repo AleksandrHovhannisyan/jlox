@@ -12,11 +12,23 @@ public class GenerateAst {
             System.exit(64);
         }
         String outputDir = args[0];
+        // Expressions
         defineAst(outputDir, "Expr", Arrays.asList(
+            // Literal (e.g., 4, "string", true, false, nil)
             "Literal  : Object value",
+            // Grouping (e.g., 2 * (3 - 1))
             "Grouping : Expr expression",
+            // Binary (e.g., 1 + 2)
             "Binary   : Expr left, Token operator, Expr right",
+            // Unary (e.g., !true, -1)
             "Unary    : Token operator, Expr right"
+        ));
+        // Statements
+        defineAst(outputDir, "Stmt", Arrays.asList(
+            // Expression statement
+            "Expression  : Expr expression",
+            // Print statement
+            "Print       : Expr expression"
         ));
     }
 
@@ -29,7 +41,7 @@ public class GenerateAst {
         writer.println();
         writer.println("import java.util.List;");
         writer.println();
-        writer.println("/** Namespace/abstract class that defines all possible types of expressions as a hierarchy of specialized classes. This allows us to construct an abstract syntax tree (AST) by linking instances of concrete expression types to each other in an object-oriented manner. For example, `Expr.Binary` contains private fields for its left and right expressions (as well as an operator); in turn, these fields can reference instances of other expression types, and so on until we reach leaf (terminal) tokens in the tree. */");
+        writer.println("/** Namespace/abstract class that defines all possible types of " + baseName + "s as a hierarchy of specialized classes. This allows us to construct an abstract syntax tree (AST) by linking instances of concrete " + baseName + " types to each other in an object-oriented manner, until we reach leaf (terminal) tokens in the tree. */");
         writer.println("abstract class " + baseName + " {");
 
         defineVisitorInterface(writer, baseName, types);
@@ -49,7 +61,7 @@ public class GenerateAst {
     }
 
     private static void defineVisitorInterface(PrintWriter writer, String baseName, List<String> types) {
-        writer.println("\t/** An expression visitor must define all of the methods in this interface. */");
+        writer.println("\t/** A " + baseName + " visitor must define all of the methods in this interface. */");
         writer.println("\tinterface Visitor<R> {");
         for (String type : types) {
             String typeName = type.split(":")[0].trim();

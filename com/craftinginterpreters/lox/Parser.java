@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class Parser {
@@ -24,8 +25,38 @@ class Parser {
     /**
      * ========================================================================================
      * Grammar production rules. Rules at the top are lower precedence than ones at the bottom.
+     * First introduced in Chapter 6 and then refined in later chapters (e.g., 8 introduces <program>).
      * ========================================================================================
      */ 
+
+    /** <program> ::= <statement>* EOF */
+    private List<Stmt> program() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
+        }
+        return statements;
+    }
+
+    /** <statement> ::= <printStatement> | <expressionStatement> */
+    private Stmt statement() {
+        if (matches(TokenType.PRINT)) return printStatement();
+        return expressionStatement();
+    }
+
+    /** <printStatement> ::= "print " <expression> ";" */
+    private Stmt printStatement() {
+        Expr expr = expression();
+        expectToken(TokenType.SEMICOLON, "Expect semicolon after expression.");
+        return new Stmt.Print(expr);
+    }
+
+    /** <expressionStatement> ::= <expression> ";" */
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        expectToken(TokenType.SEMICOLON, "Expect semicolon after expression statement.");
+        return new Stmt.Expression(expr);
+    }
 
     /** <expression> ::= <equality> */
     private Expr expression() {
