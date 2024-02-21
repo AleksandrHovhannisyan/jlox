@@ -14,9 +14,9 @@ class Parser {
         this.current = 0;
     }
  
-    Expr parse() {
+    List<Stmt> parse() {
         try {
-            return expression();
+            return program();
         } catch (ParseError error) {
             return null;
         }
