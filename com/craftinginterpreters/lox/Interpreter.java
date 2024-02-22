@@ -3,6 +3,7 @@ package com.craftinginterpreters.lox;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment environment = new Environment();
 
     /* // Prior to chapter 8, we used this
     public void interpret(Expr expression) {
@@ -99,6 +100,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
+    }
+
     /** Evaluates the given expression, returning an Object representing the result. */
     private Object evaluate(Expr expression) {
         return expression.accept(this);
@@ -169,6 +175,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitPrintStmt(Stmt.Print statement) {
         Object value = evaluate(statement.expression);
         System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var statement) {
+        Object value = null;
+        if (statement.initializer != null) {
+            value = evaluate(statement.initializer);
+        }
+        environment.define(statement.name.lexeme, value);
         return null;
     }
 }

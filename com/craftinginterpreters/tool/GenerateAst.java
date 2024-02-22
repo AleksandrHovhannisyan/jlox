@@ -21,14 +21,18 @@ public class GenerateAst {
             // Binary (e.g., 1 + 2)
             "Binary   : Expr left, Token operator, Expr right",
             // Unary (e.g., !true, -1)
-            "Unary    : Token operator, Expr right"
+            "Unary    : Token operator, Expr right",
+            // Variable access (e.g., identifier, print identifier)
+            "Variable : Token name"
         ));
         // Statements
         defineAst(outputDir, "Stmt", Arrays.asList(
             // Expression statement
             "Expression  : Expr expression",
             // Print statement
-            "Print       : Expr expression"
+            "Print       : Expr expression",
+            // Variable declarations
+            "Var         : Token name, Expr initializer"
         ));
     }
 

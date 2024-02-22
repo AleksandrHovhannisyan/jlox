@@ -29,13 +29,37 @@ class Parser {
      * ========================================================================================
      */ 
 
-    /** <program> ::= <statement>* EOF */
+    /** <program> ::= <declaration>* EOF */
     private List<Stmt> program() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
         return statements;
+    }
+
+    /** <declaration> ::= <varDeclaration> | <statement> */
+    private Stmt declaration() {
+        // From the book: "This declaration() method is the method we call repeatedly when parsing a series of statements in a block or a script, so it’s the right place to synchronize when the parser goes into panic mode. The whole body of this method is wrapped in a try block to catch the exception thrown when the parser begins error recovery. This gets it back to trying to parse the beginning of the next statement or declaration."
+        try {
+            if (matches(TokenType.VAR)) return varDeclaration();
+            return statement();
+        } catch (ParseError error) {
+            synchronize();
+            return null;
+        }
+    }
+
+    /** <varDeclaration> ::= "var" IDENTIFIER ( "=" <expression> )? ";" */
+    private Stmt varDeclaration() {
+        Token name = expectToken(TokenType.IDENTIFIER, "Expect variable name.");
+        Expr initializer = null;
+        // Assignment
+        if (matches(TokenType.EQUAL)) {
+            initializer = expression();
+        }
+        expectToken(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
     }
 
     /** <statement> ::= <printStatement> | <expressionStatement> */
@@ -132,12 +156,13 @@ class Parser {
         return primary();
     }
    
-    /** <primary> ::= "false" | "true" | "nil" | "(" <expression> ")" */
+    /** <primary> ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER */
     private Expr primary() {
         if (matches(TokenType.FALSE)) return new Expr.Literal(false);
         if (matches(TokenType.TRUE)) return new Expr.Literal(true);
         if (matches(TokenType.NIL)) return new Expr.Literal(null);
         if (matches(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(getMatchedToken().literal);
+        if (matches(TokenType.IDENTIFIER)) return new Expr.Variable(getMatchedToken());
         if (matches(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
             expectToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
@@ -185,7 +210,7 @@ class Parser {
         return tokens.get(current - 1);
     }
 
-    /** "Swallows" (consumes) the token of the specified type. If the token types do not match, throws an error. */
+    /** "Swallows" (consumes) the token of the specified type and returns it to the caller. If the token types do not match, throws an error. */
     private Token expectToken(TokenType type, String message) {
         if (isTokenOfType(type)) {
             return advance();
