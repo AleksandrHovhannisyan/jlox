@@ -12,6 +12,7 @@ abstract class Expr {
 		R visitBinaryExpr(Binary expr);
 		R visitUnaryExpr(Unary expr);
 		R visitVariableExpr(Variable expr);
+		R visitAssignmentExpr(Assignment expr);
 	}
 
 	/** Accept a visitor to us, and instruct it on HOW to visit us so it can return a value.*/
@@ -85,6 +86,21 @@ abstract class Expr {
 		@Override
 		<R> R accept(Visitor<R> visitor) {
 			return visitor.visitVariableExpr(this);
+		}
+	}
+
+	static class Assignment extends Expr {
+		final Token name;
+		final Expr value;
+
+		Assignment(Token name, Expr value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitAssignmentExpr(this);
 		}
 	}
 }

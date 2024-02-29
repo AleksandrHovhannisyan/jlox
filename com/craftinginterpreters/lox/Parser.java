@@ -82,21 +82,45 @@ class Parser {
         return new Stmt.Expression(expr);
     }
 
-    /** <expression> ::= <equality> */
+    /** <expression> ::= <assignment> */
     private Expr expression() {
-        return equality();
+        return assignment();
     }
 
     /** Chapter 6 challenge 1: C-style comma operator, lowest precedence. TODO: re-enable after we add parsing for function args
-     * <comma> ::= <equality> ("," <equality>)*
+     * <comma> ::= <assignment> ("," <assignment>)*
      */
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = assignment();
         while (matches(TokenType.COMMA)) {
             Token operator = getMatchedToken();
             Expr right = equality();
             expr = new Expr.Binary(expr, operator, right);
         }
+        return expr;
+    }
+
+    /** <assignment> ::= IDENTIFIER "=" <assignment> | <equality> */
+    private Expr assignment() {
+        // A typical recursive-descent parser has only one token of lookahead. This poses a challenge for assignment because we don't know what we're assigning to until after we parse the left-hand expression and then reach the assignment operator.
+        
+        // To solve this, we: "parse the left-hand side as if it were an expression..."
+        Expr expr = equality();
+
+        if (matches(TokenType.EQUAL)) {
+            Token equalityOperator = getMatchedToken();
+            Expr value = assignment();
+
+            // "... and then after the fact produce a syntax tree that turns it into an assignment target."
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assignment(name, value);
+            }
+
+            // "If the left-hand side expression isn’t a valid assignment target, we fail with a syntax error."
+            error(equalityOperator, "Invalid assignment target.");
+        }
+
         return expr;
     }
 

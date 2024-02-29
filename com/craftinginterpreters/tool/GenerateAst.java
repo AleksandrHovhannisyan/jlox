@@ -15,15 +15,17 @@ public class GenerateAst {
         // Expressions
         defineAst(outputDir, "Expr", Arrays.asList(
             // Literal (e.g., 4, "string", true, false, nil)
-            "Literal  : Object value",
+            "Literal    : Object value",
             // Grouping (e.g., 2 * (3 - 1))
-            "Grouping : Expr expression",
+            "Grouping   : Expr expression",
             // Binary (e.g., 1 + 2)
-            "Binary   : Expr left, Token operator, Expr right",
+            "Binary     : Expr left, Token operator, Expr right",
             // Unary (e.g., !true, -1)
-            "Unary    : Token operator, Expr right",
+            "Unary      : Token operator, Expr right",
             // Variable access (e.g., identifier, print identifier)
-            "Variable : Token name"
+            "Variable   : Token name",
+            // Assignment (e.g., a = 2)
+            "Assignment : Token name, Expr value"
         ));
         // Statements
         defineAst(outputDir, "Stmt", Arrays.asList(
