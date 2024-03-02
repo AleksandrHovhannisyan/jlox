@@ -7,6 +7,7 @@ import java.util.List;
 abstract class Stmt {
 	/** A Stmt visitor must define all of the methods in this interface. */
 	interface Visitor<R> {
+		R visitBlockStmt(Block stmt);
 		R visitExpressionStmt(Expression stmt);
 		R visitPrintStmt(Print stmt);
 		R visitVarStmt(Var stmt);
@@ -14,6 +15,19 @@ abstract class Stmt {
 
 	/** Accept a visitor to us, and instruct it on HOW to visit us so it can return a value.*/
 	abstract <R> R accept(Visitor<R> visitor);
+
+	static class Block extends Stmt {
+		final List<Stmt> statements;
+
+		Block(List<Stmt> statements) {
+			this.statements = statements;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitBlockStmt(this);
+		}
+	}
 
 	static class Expression extends Stmt {
 		final Expr expression;

@@ -18,7 +18,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
-                statement.accept(this);
+                execute(statement);
             }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
@@ -113,6 +113,35 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return value;
     }
 
+       @Override
+    public Void visitExpressionStmt(Stmt.Expression statement) {
+        evaluate(statement.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print statement) {
+        Object value = evaluate(statement.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var statement) {
+        Object value = null;
+        if (statement.initializer != null) {
+            value = evaluate(statement.initializer);
+        }
+        environment.define(statement.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block statement) {
+        executeBlock(statement.statements, new Environment(environment));
+        return null;
+    }
+
     /** Evaluates the given expression, returning an Object representing the result. */
     private Object evaluate(Expr expression) {
         return expression.accept(this);
@@ -173,26 +202,25 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return object.toString();
     }
 
-    @Override
-    public Void visitExpressionStmt(Stmt.Expression statement) {
-        evaluate(statement.expression);
-        return null;
-    }
 
-    @Override
-    public Void visitPrintStmt(Stmt.Print statement) {
-        Object value = evaluate(statement.expression);
-        System.out.println(stringify(value));
-        return null;
-    }
+    /** Executes a given block statement in the specified environment. */
+    public void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            // Create a new environment for the block
+            this.environment = environment;
 
-    @Override
-    public Void visitVarStmt(Stmt.Var statement) {
-        Object value = null;
-        if (statement.initializer != null) {
-            value = evaluate(statement.initializer);
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            // Restore old environment (allows environments to have multiple block children)
+            this.environment = previous;
         }
-        environment.define(statement.name.lexeme, value);
-        return null;
+    }
+
+    /** Executes a statement. */
+    private void execute(Stmt statement) {
+        statement.accept(this);
     }
 }

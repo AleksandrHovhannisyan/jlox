@@ -62,9 +62,10 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    /** <statement> ::= <printStatement> | <expressionStatement> */
+    /** <statement> ::= <printStatement> | <expressionStatement> | <blockStatement> */
     private Stmt statement() {
         if (matches(TokenType.PRINT)) return printStatement();
+        if (matches(TokenType.LEFT_BRACE)) return blockStatement();
         return expressionStatement();
     }
 
@@ -80,6 +81,21 @@ class Parser {
         Expr expr = expression();
         expectToken(TokenType.SEMICOLON, "Expect semicolon after expression statement.");
         return new Stmt.Expression(expr);
+    }
+
+    /** <blockStatement> ::= "{" <declaration>* "}" */
+    private Stmt blockStatement() {
+        return new Stmt.Block(getBlockStatements());
+    }
+
+    /** Helper that parses declarations between opening and closing braces. Used both for block statements and parsing function bodies. */
+    private List<Stmt> getBlockStatements() {
+        List<Stmt> statements = new ArrayList<Stmt>();
+        while (!isTokenOfType(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+        expectToken(TokenType.RIGHT_BRACE, "Expect closing brace.");
+        return statements;
     }
 
     /** <expression> ::= <assignment> */
