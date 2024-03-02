@@ -26,6 +26,22 @@ class Parser {
      * ========================================================================================
      * Grammar production rules. Rules at the top are lower precedence than ones at the bottom.
      * First introduced in Chapter 6 and then refined in later chapters (e.g., 8 introduces <program>).
+     *
+     * <program>                ::= <declaration>* EOF
+     * <declaration>            ::= <varDeclaration> | <statement>
+     * <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
+     * <statement>              ::= <printStatement> | <expressionStatement> | <blockStatement>
+     * <printStatement>         ::= "print " <expression> ";"
+     * <expressionStatement>    ::= <expression> ";"
+     * <blockStatement>         ::= "{" <declaration>* "}"
+     * <expression>             ::= <assignment>
+     * <assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
+     * <equality>               ::= <comparison> ( ("!="|"==") <comparison> )*
+     * <comparison>             ::= <term> ( (">"|">="|"<"|"<=") <term> )*
+     * <term>                   ::= <factor> ( ("-"|"+") <factor> )*
+     * <factor>                 ::= <unary> ( ("/"|"*") <unary> )*
+     * <unary>                  ::= ("!"|"-") <unary> | <primary>
+     * <primary>                ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER
      * ========================================================================================
      */ 
 
