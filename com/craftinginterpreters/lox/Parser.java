@@ -58,7 +58,7 @@ class Parser {
     private Stmt declaration() {
         // From the book: "This declaration() method is the method we call repeatedly when parsing a series of statements in a block or a script, so it’s the right place to synchronize when the parser goes into panic mode. The whole body of this method is wrapped in a try block to catch the exception thrown when the parser begins error recovery. This gets it back to trying to parse the beginning of the next statement or declaration."
         try {
-            if (matches(TokenType.VAR)) return varDeclaration();
+            if (consumedTokenMatches(TokenType.VAR)) return varDeclaration();
             return statement();
         } catch (ParseError error) {
             synchronize();
@@ -71,7 +71,7 @@ class Parser {
         Token name = expectToken(TokenType.IDENTIFIER, "Expect variable name.");
         Expr initializer = null;
         // Assignment
-        if (matches(TokenType.EQUAL)) {
+        if (consumedTokenMatches(TokenType.EQUAL)) {
             initializer = expression();
         }
         expectToken(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
@@ -80,8 +80,8 @@ class Parser {
 
     /** <statement> ::= <printStatement> | <expressionStatement> | <blockStatement> */
     private Stmt statement() {
-        if (matches(TokenType.PRINT)) return printStatement();
-        if (matches(TokenType.LEFT_BRACE)) return blockStatement();
+        if (consumedTokenMatches(TokenType.PRINT)) return printStatement();
+        if (consumedTokenMatches(TokenType.LEFT_BRACE)) return blockStatement();
         return expressionStatement();
     }
 
@@ -124,7 +124,7 @@ class Parser {
      */
     private Expr comma() {
         Expr expr = assignment();
-        while (matches(TokenType.COMMA)) {
+        while (consumedTokenMatches(TokenType.COMMA)) {
             Token operator = getMatchedToken();
             Expr right = equality();
             expr = new Expr.Binary(expr, operator, right);
@@ -139,7 +139,7 @@ class Parser {
         // To solve this, we: "parse the left-hand side as if it were an expression..."
         Expr expr = equality();
 
-        if (matches(TokenType.EQUAL)) {
+        if (consumedTokenMatches(TokenType.EQUAL)) {
             Token equalityOperator = getMatchedToken();
             Expr value = assignment();
 
@@ -159,7 +159,7 @@ class Parser {
     /** <equality> ::= <comparison> ( ("!="|"==") <comparison> )* */
     private Expr equality() {
         Expr expr = comparison();
-        while (matches(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+        while (consumedTokenMatches(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
             Token operator = getMatchedToken();
             Expr right = comparison();
             expr = new Expr.Binary(expr, operator, right);
@@ -170,7 +170,7 @@ class Parser {
     /** <comparison> ::= <term> ( (">"|">="|"<"|"<=") <term> )* */
     private Expr comparison() {
         Expr expr = term();
-        while (matches(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
+        while (consumedTokenMatches(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
             Token operator = getMatchedToken();
             Expr right = term();
             expr = new Expr.Binary(expr, operator, right);
@@ -181,7 +181,7 @@ class Parser {
     /** <term> ::= <factor> ( ("-"|"+") <factor> )* */
     private Expr term() {
         Expr expr = factor();
-        while (matches(TokenType.MINUS, TokenType.PLUS)) {
+        while (consumedTokenMatches(TokenType.MINUS, TokenType.PLUS)) {
             Token operator = getMatchedToken();
             Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
@@ -192,7 +192,7 @@ class Parser {
     /** <factor> ::= <unary> ( ("/"|"*") <unary> )* */
     private Expr factor() {
         Expr expr = unary();
-        while (matches(TokenType.SLASH, TokenType.STAR)) {
+        while (consumedTokenMatches(TokenType.SLASH, TokenType.STAR)) {
             Token operator = getMatchedToken();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
@@ -204,7 +204,7 @@ class Parser {
      *            | <primary>
      */
     private Expr unary() {
-        if (matches(TokenType.BANG, TokenType.MINUS)) {
+        if (consumedTokenMatches(TokenType.BANG, TokenType.MINUS)) {
             Token operator = getMatchedToken();
             Expr right = unary();
             return new Expr.Unary(operator, right);
@@ -214,12 +214,12 @@ class Parser {
    
     /** <primary> ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER */
     private Expr primary() {
-        if (matches(TokenType.FALSE)) return new Expr.Literal(false);
-        if (matches(TokenType.TRUE)) return new Expr.Literal(true);
-        if (matches(TokenType.NIL)) return new Expr.Literal(null);
-        if (matches(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(getMatchedToken().literal);
-        if (matches(TokenType.IDENTIFIER)) return new Expr.Variable(getMatchedToken());
-        if (matches(TokenType.LEFT_PAREN)) {
+        if (consumedTokenMatches(TokenType.FALSE)) return new Expr.Literal(false);
+        if (consumedTokenMatches(TokenType.TRUE)) return new Expr.Literal(true);
+        if (consumedTokenMatches(TokenType.NIL)) return new Expr.Literal(null);
+        if (consumedTokenMatches(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(getMatchedToken().literal);
+        if (consumedTokenMatches(TokenType.IDENTIFIER)) return new Expr.Variable(getMatchedToken());
+        if (consumedTokenMatches(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
             expectToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
@@ -228,8 +228,8 @@ class Parser {
     }
 
     /** Returns `true` if the current token we are looking at matches one of the given types and `false` otherwise. 
-     *  NOTE: If it matches, the parser will advance one position. */
-    private boolean matches(TokenType... types) {
+     *  NOTE: If it matches, the parser will advance one position and consume that token. */
+    private boolean consumedTokenMatches(TokenType... types) {
         for (TokenType type : types) {
             if (isTokenOfType(type)) {
                 advance();
