@@ -10,10 +10,11 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <program>                ::= <declaration>* EOF
 <declaration>            ::= <varDeclaration> | <statement>
 <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
-<statement>              ::= <printStatement> | <expressionStatement> | <blockStatement>
+<statement>              ::= <printStatement> | <expressionStatement> | <blockStatement> | <ifStatement>
 <printStatement>         ::= "print " <expression> ";"
 <expressionStatement>    ::= <expression> ";"
 <blockStatement>         ::= "{" <declaration>* "}"
+<ifStatement> ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
 <expression>             ::= <assignment>
 <assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
 <equality>               ::= <comparison> ( ("!="|"==") <comparison> )*

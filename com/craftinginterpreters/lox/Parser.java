@@ -30,10 +30,11 @@ class Parser {
      * <program>                ::= <declaration>* EOF
      * <declaration>            ::= <varDeclaration> | <statement>
      * <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
-     * <statement>              ::= <printStatement> | <expressionStatement> | <blockStatement>
+     * <statement>              ::= <printStatement> | <expressionStatement> | <blockStatement> | <ifStatement>
      * <printStatement>         ::= "print " <expression> ";"
      * <expressionStatement>    ::= <expression> ";"
      * <blockStatement>         ::= "{" <declaration>* "}"
+     * <ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
      * <expression>             ::= <assignment>
      * <assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
      * <equality>               ::= <comparison> ( ("!="|"==") <comparison> )*
@@ -82,6 +83,7 @@ class Parser {
     private Stmt statement() {
         if (consumedTokenMatches(TokenType.PRINT)) return printStatement();
         if (consumedTokenMatches(TokenType.LEFT_BRACE)) return blockStatement();
+        if (consumedTokenMatches(TokenType.IF)) return ifStatement();
         return expressionStatement();
     }
 
@@ -102,6 +104,19 @@ class Parser {
     /** <blockStatement> ::= "{" <declaration>* "}" */
     private Stmt blockStatement() {
         return new Stmt.Block(getBlockStatements());
+    }
+
+    /** <ifStatement> ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )? */
+    private Stmt ifStatement() {
+        expectToken(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        expectToken(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (consumedTokenMatches(TokenType.ELSE)) {
+            elseBranch = statement();
+        }
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     /** Helper that parses declarations between opening and closing braces. Used both for block statements and parsing function bodies. */

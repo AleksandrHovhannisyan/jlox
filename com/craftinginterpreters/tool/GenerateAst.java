@@ -36,7 +36,9 @@ public class GenerateAst {
             // Print statement
             "Print       : Expr expression",
             // Variable declarations
-            "Var         : Token name, Expr initializer"
+            "Var         : Token name, Expr initializer",
+            // If statements
+            "If          : Expr condition, Stmt thenBranch, Stmt elseBranch"
         ));
     }
 
