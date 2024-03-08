@@ -1,4 +1,4 @@
-build: com/craftinginterpreters/lox/Lox.java
+build: $(shell find com/craftinginterpreters/lox -type f)
 	javac com/craftinginterpreters/lox/Lox.java
 
 ast: com/craftinginterpreters/tool/GenerateAst.java
