@@ -10,11 +10,17 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <program>                ::= <declaration>* EOF
 <declaration>            ::= <varDeclaration> | <statement>
 <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
-<statement>              ::= <printStatement> | <expressionStatement> | <blockStatement> | <ifStatement>
+
+<statement>              ::= <printStatement> | 
+                             <expressionStatement> | 
+                             <blockStatement> | 
+                             <ifStatement> |
+                             <whileStatement>
 <printStatement>         ::= "print " <expression> ";"
 <expressionStatement>    ::= <expression> ";"
 <blockStatement>         ::= "{" <declaration>* "}"
 <ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
+<whileStatement>         ::= "while" "(" <expression> ")" <statement>
 
 <expression>             ::= <assignment>
 <assignment>             ::= IDENTIFIER "=" <assignment> | <logic_or>
@@ -25,7 +31,11 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <term>                   ::= <factor> ( ("-"|"+") <factor> )*
 <factor>                 ::= <unary> ( ("/"|"*") <unary> )*
 <unary>                  ::= ("!"|"-") <unary> | <primary>
-<primary>                ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER
+<primary>                ::= "false" | 
+                             "true" | 
+                             "nil" | 
+                             "(" <expression> ")" | 
+                             IDENTIFIER
 ```
 
 ## Getting Started

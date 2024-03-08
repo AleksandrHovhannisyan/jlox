@@ -40,7 +40,9 @@ public class GenerateAst {
             // Variable declarations
             "Var         : Token name, Expr initializer",
             // If statements
-            "If          : Expr condition, Stmt thenBranch, Stmt elseBranch"
+            "If          : Expr condition, Stmt thenBranch, Stmt elseBranch",
+            // While statements
+            "While       : Expr condition, Stmt body"
         ));
     }
 

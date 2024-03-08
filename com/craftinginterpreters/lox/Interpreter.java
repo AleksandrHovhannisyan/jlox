@@ -164,6 +164,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitWhileStmt(Stmt.While statement) {
+        while (isTruthy(evaluate(statement.condition))) {
+            execute(statement.body);
+        }
+        return null;
+    }
+
     /** Evaluates the given expression, returning an Object representing the result. */
     private Object evaluate(Expr expression) {
         return expression.accept(this);

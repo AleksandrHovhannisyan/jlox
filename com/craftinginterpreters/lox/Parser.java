@@ -30,11 +30,18 @@ class Parser {
      * <program>                ::= <declaration>* EOF
      * <declaration>            ::= <varDeclaration> | <statement>
      * <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
-     * <statement>              ::= <printStatement> | <expressionStatement> | <blockStatement> | <ifStatement>
+     *
+     * <statement>              ::= <printStatement> | 
+     *                              <expressionStatement> | 
+     *                              <blockStatement> | 
+     *                              <ifStatement> |
+     *                              <whileStatement>
      * <printStatement>         ::= "print " <expression> ";"
      * <expressionStatement>    ::= <expression> ";"
      * <blockStatement>         ::= "{" <declaration>* "}"
      * <ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
+     * <whileStatement>         ::= "while" "(" <expression> ")" <statement>
+     *
      * <expression>             ::= <assignment>
      * <assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
      * <equality>               ::= <comparison> ( ("!="|"==") <comparison> )*
@@ -42,7 +49,11 @@ class Parser {
      * <term>                   ::= <factor> ( ("-"|"+") <factor> )*
      * <factor>                 ::= <unary> ( ("/"|"*") <unary> )*
      * <unary>                  ::= ("!"|"-") <unary> | <primary>
-     * <primary>                ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER
+     * <primary>                ::= "false" | 
+     *                              "true" | 
+     *                              "nil" | 
+     *                              "(" <expression> ")" | 
+     *                              IDENTIFIER
      * ========================================================================================
      */ 
 
@@ -79,11 +90,12 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    /** <statement> ::= <printStatement> | <expressionStatement> | <blockStatement> */
+    /** <statement> ::= <printStatement> | <expressionStatement> | <blockStatement> | <whileStatement> */
     private Stmt statement() {
         if (consumedTokenMatches(TokenType.PRINT)) return printStatement();
         if (consumedTokenMatches(TokenType.LEFT_BRACE)) return blockStatement();
         if (consumedTokenMatches(TokenType.IF)) return ifStatement();
+        if (consumedTokenMatches(TokenType.WHILE)) return whileStatement();
         return expressionStatement();
     }
 
@@ -117,6 +129,15 @@ class Parser {
             elseBranch = statement();
         }
         return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    /** <whileStatement> ::= "while" "(" <expression> ")" <statement> */
+    private Stmt whileStatement() {
+        expectToken(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr condition = expression();
+        expectToken(TokenType.RIGHT_PAREN, "Expect ')' after while condition.");
+        Stmt body = statement();
+        return new Stmt.While(condition, body);
     }
 
     /** Helper that parses declarations between opening and closing braces. Used both for block statements and parsing function bodies. */
