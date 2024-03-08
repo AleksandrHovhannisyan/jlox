@@ -26,10 +26,12 @@ class Environment {
         // Assign to a variable declared in the current scope
         if (values.containsKey(name.lexeme)) {
             values.put(name.lexeme, value);
+            return;
         }
         // Else, try assigning to a variable declared in the enclosing scope
         if (parent != null) {
             parent.assign(name, value);
+            return;
         }
         throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
     }
