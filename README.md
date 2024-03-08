@@ -14,9 +14,12 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <printStatement>         ::= "print " <expression> ";"
 <expressionStatement>    ::= <expression> ";"
 <blockStatement>         ::= "{" <declaration>* "}"
-<ifStatement> ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
+<ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
+
 <expression>             ::= <assignment>
-<assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
+<assignment>             ::= IDENTIFIER "=" <assignment> | <logic_or>
+<logic_or>               ::= <logic_and> ( "or" <logic_and> )*
+<logic_and>              ::= <equality> ( "and" <equality> )*
 <equality>               ::= <comparison> ( ("!="|"==") <comparison> )*
 <comparison>             ::= <term> ( (">"|">="|"<"|"<=") <term> )*
 <term>                   ::= <factor> ( ("-"|"+") <factor> )*

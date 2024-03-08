@@ -25,7 +25,9 @@ public class GenerateAst {
             // Variable access (e.g., identifier, print identifier)
             "Variable   : Token name",
             // Assignment (e.g., a = 2)
-            "Assignment : Token name, Expr value"
+            "Assignment : Token name, Expr value",
+            // Logical
+            "Logical    : Expr left, Token operator, Expr right"
         ));
         // Statements
         defineAst(outputDir, "Stmt", Arrays.asList(

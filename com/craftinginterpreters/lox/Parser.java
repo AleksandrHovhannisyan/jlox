@@ -147,12 +147,12 @@ class Parser {
         return expr;
     }
 
-    /** <assignment> ::= IDENTIFIER "=" <assignment> | <equality> */
+    /** <assignment> ::= IDENTIFIER "=" <assignment> | <logic_or> */
     private Expr assignment() {
         // A typical recursive-descent parser has only one token of lookahead. This poses a challenge for assignment because we don't know what we're assigning to until after we parse the left-hand expression and then reach the assignment operator.
         
         // To solve this, we: "parse the left-hand side as if it were an expression..."
-        Expr expr = equality();
+        Expr expr = logicalOr();
 
         if (consumedTokenMatches(TokenType.EQUAL)) {
             Token equalityOperator = getMatchedToken();
@@ -168,6 +168,28 @@ class Parser {
             error(equalityOperator, "Invalid assignment target.");
         }
 
+        return expr;
+    }
+
+    /** <logic_or> ::= <logic_and> ( "or" <logic_and> )* */
+    private Expr logicalOr() {
+        Expr expr = logicalAnd();
+        while (consumedTokenMatches(TokenType.OR)) {
+            Token operator = getMatchedToken();
+            Expr right = logicalAnd();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+
+    /** <logic_and> ::= <equality> ( "and" <equality> )* */
+    private Expr logicalAnd() {
+        Expr expr = equality();
+        while (consumedTokenMatches(TokenType.AND)) {
+            Token operator = getMatchedToken();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
+        }
         return expr;
     }
 
