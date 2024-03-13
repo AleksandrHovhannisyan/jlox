@@ -1,6 +1,7 @@
 package com.craftinginterpreters.lox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class Parser {
@@ -36,11 +37,16 @@ class Parser {
      *                              <blockStatement> | 
      *                              <ifStatement> |
      *                              <whileStatement>
+     *                              <forStatement>
+     *
      * <printStatement>         ::= "print " <expression> ";"
      * <expressionStatement>    ::= <expression> ";"
      * <blockStatement>         ::= "{" <declaration>* "}"
      * <ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
      * <whileStatement>         ::= "while" "(" <expression> ")" <statement>
+     * <forStatement>           ::= "for" "(" ( <varDeclaration> | <expressionStatement> | ";" )
+     *                                  <expression>? ";" 
+     *                                  <expression>? ")" <statement>
      *
      * <expression>             ::= <assignment>
      * <assignment>             ::= IDENTIFIER "=" <assignment> | <equality>
@@ -96,6 +102,7 @@ class Parser {
         if (consumedTokenMatches(TokenType.LEFT_BRACE)) return blockStatement();
         if (consumedTokenMatches(TokenType.IF)) return ifStatement();
         if (consumedTokenMatches(TokenType.WHILE)) return whileStatement();
+        if (consumedTokenMatches(TokenType.FOR)) return forStatement();
         return expressionStatement();
     }
 
@@ -138,6 +145,46 @@ class Parser {
         expectToken(TokenType.RIGHT_PAREN, "Expect ')' after while condition.");
         Stmt body = statement();
         return new Stmt.While(condition, body);
+    }
+
+    /** <forStatement> ::= "for" "(" ( <varDeclaration> | <expressionStatement> | ";" ) <expression>? ";" <expression> ")" <statement> */
+    private Stmt forStatement() {
+        expectToken(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+        Stmt initializer;
+        if (consumedTokenMatches(TokenType.SEMICOLON)) {
+            initializer = null;
+        } else if (consumedTokenMatches(TokenType.VAR)) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+        Expr condition = null;
+        if (!consumedTokenMatches(TokenType.SEMICOLON)) {
+            condition = expression();
+        }
+        expectToken(TokenType.SEMICOLON, "Expect ';' after for loop condition.");
+        Expr increment = null;
+        // Don't consume right paren yet
+        if (!isTokenOfType(TokenType.RIGHT_PAREN)) {
+            increment = expression();
+        }
+        expectToken(TokenType.RIGHT_PAREN, "Expect ')' after for loop increment.");
+        Stmt body = statement();
+
+        // Desugar for loop to equivalent while loop
+        if (increment != null) {
+            // Treat body as a block. Increment after body.
+            body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
+        }
+        // If no condition, then while(true)
+        if (condition == null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+        // Initializer runs once before body
+        if (initializer != null) {
+            body = new Stmt.Block(Arrays.asList(initializer, body));
+        }
+        // Our interpreter already knows how to handle while statements, so just return the body
+        return body;
     }
 
     /** Helper that parses declarations between opening and closing braces. Used both for block statements and parsing function bodies. */

@@ -21,7 +21,9 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <blockStatement>         ::= "{" <declaration>* "}"
 <ifStatement>            ::= "if" "(" <expression> ")" <statement> ( "else" <statement> )?
 <whileStatement>         ::= "while" "(" <expression> ")" <statement>
-
+<forStatement>           ::= "for" "(" ( <varDeclaration> | <expressionStatement> | ";" )
+                                <expression>? ";" 
+                                <expression>? ")" <statement>
 <expression>             ::= <assignment>
 <assignment>             ::= IDENTIFIER "=" <assignment> | <logic_or>
 <logic_or>               ::= <logic_and> ( "or" <logic_and> )*
