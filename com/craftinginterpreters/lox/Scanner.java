@@ -105,8 +105,7 @@ class Scanner {
                 if (isDigit(character)) {
                     number();
                 } else if (isAlpha(character)) {
-                    // First use maximal much/greed and assume that a string of alpha characters is an identifier. We'll check if it's a reserved keyword later.
-                    identifier();
+                    identifierOrKeyword();
                 } else {
                     Lox.reportError(lineNumber, "Unexpected character.");
                 }
@@ -178,6 +177,8 @@ class Scanner {
             consumeCharacterAndAdvance();
         }
 
+        // If we get here, then either the upcoming character is a " (valid) or we reached the end without finding one,
+        // but never both. Hence why we only check this one failure condition without having to also check peek() == ".
         if (isAtEnd()) {
             Lox.reportError(lineNumber, "Unterminated string.");
         }
@@ -208,9 +209,11 @@ class Scanner {
     }
 
     /** Processes an identifier in maximal munch fashion, then treats it as either an identifier or a reserved keyword. */
-    private void identifier() {
+    private void identifierOrKeyword() {
+        // First use maximal much/greed and assume that a string of alpha characters is an identifier.
         while (isAlphaNumeric(peek())) consumeCharacterAndAdvance();
         String text = source.substring(tokenStartIndex, currentIndex);
+        // Check if it's a reserved keyword. If so, treat it as a keyword token. Else, identifier.
         TokenType type = keywords.get(text);
         if (type == null) type = TokenType.IDENTIFIER;
         addToken(type);
