@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Lox {
     private static final Interpreter interpreter = new Interpreter();
-    static boolean hadError = false;
+    static boolean hadSyntaxError = false;
     static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
@@ -24,13 +24,15 @@ public class Lox {
         }
     }
 
+    /** Runs Lox interpreter on an input file */
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
-        if (hadError) System.exit(65);
+        if (hadSyntaxError) System.exit(65);
         if (hadRuntimeError) System.exit(70);
     }
 
+    /** Runs Lox interpreter as a REPL */
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -40,7 +42,7 @@ public class Lox {
             String line = reader.readLine();
             if (line == null) break;
             run(line);
-            hadError = false;
+            hadSyntaxError = false;
         }
     }
 
@@ -51,7 +53,7 @@ public class Lox {
         List<Stmt> statements = parser.parse();
 
         // Early-return if there was a syntax error
-        if (hadError) return;
+        if (hadSyntaxError) return;
         // Otherwise interpret it
         interpreter.interpret(statements);
     }
@@ -76,6 +78,6 @@ public class Lox {
 
     private static void report(int lineNumber, String where, String message) {
         System.err.println("[line " + lineNumber + "] Error" + where + ": " + message);
-        hadError = true;
+        hadSyntaxError = true;
     }
 }
