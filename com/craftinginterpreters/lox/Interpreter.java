@@ -11,7 +11,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             Object value = evaluate(expression);
             System.out.println(stringify(value));
         } catch (RuntimeError error) {
-            Lox.runtimeError(error);
+            Lox.reportRuntimeError(error);
         }
     }*/
 
@@ -21,7 +21,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 execute(statement);
             }
         } catch (RuntimeError error) {
-            Lox.runtimeError(error);
+            Lox.reportRuntimeError(error);
         }
     }
 

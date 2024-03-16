@@ -59,24 +59,24 @@ public class Lox {
     }
 
     static void reportError(int lineNumber, String message) {
-        report(lineNumber, "", message);
+        reportSyntaxError(lineNumber, "", message);
     }
 
     static void reportError(Token token, String message) {
         if (token.type == TokenType.EOF) {
-            report(token.lineNumber, " at end", message);
+            reportSyntaxError(token.lineNumber, " at end", message);
         } else {
-            report(token.lineNumber, " at '" + token.lexeme + "'", message);
+            reportSyntaxError(token.lineNumber, " at '" + token.lexeme + "'", message);
         }
     }
 
-    static void runtimeError(RuntimeError error) {
+    static void reportRuntimeError(RuntimeError error) {
         System.err.println(error.getMessage() +
                 "\n[line " + error.token.lineNumber + "]");
         hadRuntimeError = true;
     }
 
-    private static void report(int lineNumber, String where, String message) {
+    private static void reportSyntaxError(int lineNumber, String where, String message) {
         System.err.println("[line " + lineNumber + "] Error" + where + ": " + message);
         hadSyntaxError = true;
     }

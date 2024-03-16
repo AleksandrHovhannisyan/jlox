@@ -233,7 +233,7 @@ class Parser {
             }
 
             // "If the left-hand side expression isn’t a valid assignment target, we fail with a syntax error."
-            error(equalityOperator, "Invalid assignment target.");
+            syntaxError(equalityOperator, "Invalid assignment target.");
         }
 
         return expr;
@@ -329,7 +329,7 @@ class Parser {
             expectToken(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
-        throw error(peek(), "Expect expression.");
+        throw syntaxError(peek(), "Expect expression.");
     }
 
     /** Returns `true` if the current token we are looking at matches one of the given types and `false` otherwise. 
@@ -376,11 +376,11 @@ class Parser {
         if (isTokenOfType(type)) {
             return advance();
         }
-        throw error(peek(), message);
+        throw syntaxError(peek(), message);
     }
 
-    /** Reports an error to the user and returns that error so it can be thrown. */
-    private ParseError error(Token token, String message) {
+    /** Reports a syntax error to the user and returns that error so it can be thrown. */
+    private ParseError syntaxError(Token token, String message) {
         Lox.reportError(token, message);
         return new ParseError();
     }
