@@ -4,17 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    // Every language has a global scope (e.g., JavaScript has window, Node has global, etc.)
+    private Environment globals = new Environment();
+    private Environment environment = globals;
 
-    /* // Prior to chapter 8, we used this
-    public void interpret(Expr expression) {
-        try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
-        } catch (RuntimeError error) {
-            Lox.reportRuntimeError(error);
-        }
-    }*/
+    Interpreter() {
+        // Define globals for Lox
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() { return 0; }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double)System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+        });
+    }
 
     public void interpret(List<Stmt> statements) {
         try {
