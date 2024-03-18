@@ -54,7 +54,10 @@ class Parser {
      * <comparison>             ::= <term> ( (">"|">="|"<"|"<=") <term> )*
      * <term>                   ::= <factor> ( ("-"|"+") <factor> )*
      * <factor>                 ::= <unary> ( ("/"|"*") <unary> )*
-     * <unary>                  ::= ("!"|"-") <unary> | <primary>
+     * <unary>                  ::= ("!"|"-") <unary> | <call>
+     * <call>                   ::= <primary> ( "(" <arguments>? ")" )*
+     * <arguments>              ::= <expression> ( "," <expression> )*
+     *
      * <primary>                ::= "false" | 
      *                              "true" | 
      *                              "nil" | 
@@ -314,7 +317,38 @@ class Parser {
             Expr right = unary();
             return new Expr.Unary(operator, right);
         }
-        return primary();
+        return call();
+    }
+
+    /** <call> ::= <primary> ( "(" <arguments>? ")" )* */
+    private Expr call() {
+        Expr expr = primary();
+
+        while (true) {
+            if (consumedTokenMatches(TokenType.LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    /** <arguments> ::= <expression> ( "," <expression> )* */
+    private Expr finishCall(Expr callee) {
+        List<Expr> arguments = new ArrayList<>();
+        if (!isTokenOfType(TokenType.RIGHT_PAREN)) {
+            do {
+                // TODO: move 255 to Lox class as a static property
+                if (arguments.size() == 255) {
+                    syntaxError(peek(), "Can't have more than 255 arguments.");
+                }
+                arguments.add(expression());
+            } while (consumedTokenMatches(TokenType.COMMA));
+        }
+        Token closingParenthesis = expectToken(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+        return new Expr.Call(callee, closingParenthesis, arguments);
     }
    
     /** <primary> ::= "false" | "true" | "nil" | "(" <expression> ")" | IDENTIFIER */

@@ -27,7 +27,9 @@ public class GenerateAst {
             // Assignment (e.g., a = 2)
             "Assignment : Token name, Expr value",
             // Logical
-            "Logical    : Expr left, Token operator, Expr right"
+            "Logical    : Expr left, Token operator, Expr right",
+            // Function calls. Note: We store a ref to the closing parenthesis so we can report runtime errors at that location.
+            "Call       : Expr callee, Token closingParenthesis, List<Expr> arguments"
         ));
         // Statements
         defineAst(outputDir, "Stmt", Arrays.asList(

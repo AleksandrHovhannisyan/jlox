@@ -14,6 +14,7 @@ abstract class Expr {
 		R visitVariableExpr(Variable expr);
 		R visitAssignmentExpr(Assignment expr);
 		R visitLogicalExpr(Logical expr);
+		R visitCallExpr(Call expr);
 	}
 
 	/** Accept a visitor to us, and instruct it on HOW to visit us so it can return a value.*/
@@ -119,6 +120,23 @@ abstract class Expr {
 		@Override
 		<R> R accept(Visitor<R> visitor) {
 			return visitor.visitLogicalExpr(this);
+		}
+	}
+
+	static class Call extends Expr {
+		final Expr callee;
+		final Token closingParenthesis;
+		final List<Expr> arguments;
+
+		Call(Expr callee, Token closingParenthesis, List<Expr> arguments) {
+			this.callee = callee;
+			this.closingParenthesis = closingParenthesis;
+			this.arguments = arguments;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitCallExpr(this);
 		}
 	}
 }
