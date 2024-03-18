@@ -32,7 +32,9 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 <comparison>             ::= <term> ( (">"|">="|"<"|"<=") <term> )*
 <term>                   ::= <factor> ( ("-"|"+") <factor> )*
 <factor>                 ::= <unary> ( ("/"|"*") <unary> )*
-<unary>                  ::= ("!"|"-") <unary> | <primary>
+<unary>                  ::= ("!"|"-") <unary> | <call>
+<call>                   ::= <primary> ( "(" <arguments>? ")" )*
+<arguments>              ::= <expression> ( "," <expression> )*
 <primary>                ::= "false" | 
                              "true" | 
                              "nil" | 
