@@ -8,8 +8,11 @@ The grammar production rules for Lox are listed below. Rules at the top have a l
 
 ```
 <program>                ::= <declaration>* EOF
-<declaration>            ::= <varDeclaration> | <statement>
+<declaration>            ::= <varDeclaration> | <functionDeclaration> | <statement>
 <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
+<functionDeclaration>    ::= "fun" <function>
+<function>               ::= IDENTIFIER "(" <parameters>? ")" <block>
+<parameters>             ::= IDENTIFIER ( "," IDENTIFIER )*
 
 <statement>              ::= <printStatement> | 
                              <expressionStatement> | 

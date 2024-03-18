@@ -29,8 +29,11 @@ class Parser {
      * First introduced in Chapter 6 and then refined in later chapters (e.g., 8 introduces <program>).
      *
      * <program>                ::= <declaration>* EOF
-     * <declaration>            ::= <varDeclaration> | <statement>
+     * <declaration>            ::= <varDeclaration> | <functionDeclaration> | <statement>
      * <varDeclaration>         ::= "var" IDENTIFIER ( "=" <expression> )? ";"
+     * <functionDeclaration>    ::= "fun" <function>
+     * <function>               ::= IDENTIFIER "(" <parameters>? ")" <block>
+     * <parameters>             ::= IDENTIFIER ( "," IDENTIFIER )*
      *
      * <statement>              ::= <printStatement> | 
      *                              <expressionStatement> | 
@@ -80,6 +83,7 @@ class Parser {
         // From the book: "This declaration() method is the method we call repeatedly when parsing a series of statements in a block or a script, so it’s the right place to synchronize when the parser goes into panic mode. The whole body of this method is wrapped in a try block to catch the exception thrown when the parser begins error recovery. This gets it back to trying to parse the beginning of the next statement or declaration."
         try {
             if (consumedTokenMatches(TokenType.VAR)) return varDeclaration();
+            if (consumedTokenMatches(TokenType.FUN)) return function();
             return statement();
         } catch (ParseError error) {
             synchronize();
@@ -97,6 +101,29 @@ class Parser {
         }
         expectToken(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
         return new Stmt.Var(name, initializer);
+    }
+
+    /* <functionDeclaration>    ::= "fun" <function>
+     * <function>               ::= IDENTIFIER "(" <parameters>? ")" <block>
+     * <parameters>             ::= IDENTIFIER ( "," IDENTIFIER )*
+     */
+    private Stmt function(String functionType) {
+        Token name = expectToken(TokenType.IDENTIFIER, "Expect " + functionType + " name.");
+        expectToken(TokenType.LEFT_PAREN, "Expect '(' after " + functionType + " name.");
+        List<Token> parameters = new ArrayList<>();
+        // Non-empty parameter list
+        if (!isTokenOfType(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size() == 255) {
+                    syntaxError(peek(), "Can't have more than 255 parameters.");
+                }
+                parameters.add(expectToken(TokenType.IDENTIFIER, "Expect parameter name."));
+            } while (consumedTokenMatches(TokenType.COMMA));
+        }
+        expectToken(TokenType.RIGHT_PAREN, "Expect ')' after " + functionType + " parameter list.");
+        expectToken(TokenType.LEFT_BRACE, "Expect '{' before " + functionType + " body.");
+        List<Stmt> body = getBlockStatements();
+        return new Stmt.Function(name, parameters, body);
     }
 
     /** <statement> ::= <printStatement> | <expressionStatement> | <blockStatement> | <whileStatement> */

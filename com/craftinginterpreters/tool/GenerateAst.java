@@ -41,6 +41,8 @@ public class GenerateAst {
             "Print       : Expr expression",
             // Variable declarations
             "Var         : Token name, Expr initializer",
+            // Function declarations
+            "Function    : Token name, List<Token> parameters, List<Stmt> body",
             // If statements
             "If          : Expr condition, Stmt thenBranch, Stmt elseBranch",
             // While statements
